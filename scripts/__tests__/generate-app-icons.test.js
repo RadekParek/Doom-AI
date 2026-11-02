@@ -198,7 +198,7 @@ describe('buildTextOutputs', () => {
     ).toBe(adaptive);
     expect(
       outputs['android/app/src/main/res/values/ic_launcher_background.xml'],
-    ).toContain('<color name="ic_launcher_background">#FFFFFF</color>');
+    ).toContain('<color name="ic_launcher_background">#071A12</color>');
   });
 
   it('writes Contents.json in Xcode single-size form', () => {
@@ -565,9 +565,12 @@ function applyTransform(transform, [x, y], radius) {
 
 function palPointsOutsideSafeCircle(text) {
   const outside = [];
-  const visit = (node, transforms, inPal) => {
+  // The two outer hood shapes intentionally bleed under Android's launcher
+  // mask. Keep the central face and its features inside the safe circle.
+  const bleedShapes = new Set(['hood', 'hood-shadow']);
+  const visit = (node, transforms) => {
     if (node.type === 'path') {
-      if (!inPal) {
+      if (bleedShapes.has(node.attrs.id)) {
         return;
       }
       const strokeReach = node.attrs.stroke
@@ -591,23 +594,12 @@ function palPointsOutsideSafeCircle(text) {
       ? [...transforms, node.transform]
       : transforms;
     for (const child of node.children) {
-      visit(child, nested, inPal || node.id === 'pal');
+      visit(child, nested);
     }
   };
   const tree = parseSvg(text);
-  let palGroups = 0;
-  const countPal = nodes => {
-    for (const node of nodes) {
-      if (node.type === 'group') {
-        palGroups += node.id === 'pal' ? 1 : 0;
-        countPal(node.children);
-      }
-    }
-  };
-  countPal(tree.children);
-  expect(palGroups).toBe(1);
   for (const node of tree.children) {
-    visit(node, [], false);
+    visit(node, []);
   }
   return outside;
 }
@@ -624,18 +616,18 @@ describe('committed sources', () => {
     );
 
   it.each(Object.keys(SOURCE_FILES))(
-    'keeps the pal of %s inside the safe circle',
+    'keeps the central face features of %s inside the safe circle',
     key => {
       expect(palPointsOutsideSafeCircle(readSource(key))).toEqual([]);
     },
   );
 
-  it('names the pal path that leaves the safe circle', () => {
+  it('names a face path that leaves the safe circle', () => {
     const moved = readSource('foregroundLight').replace(
-      'M85.7529 46.8772',
-      'M115.7529 46.8772',
+      'M29 45C38 39',
+      'M129 45C138 39',
     );
-    expect(outsideIds(moved)).toEqual(['band']);
+    expect(outsideIds(moved)).toEqual(['mask']);
   });
 
   it('applies group transforms before measuring', () => {
@@ -662,11 +654,13 @@ describe('committed outputs', () => {
     );
   });
 
-  it('cuts the face out of the monochrome layer and clips it at the pocket', () => {
+  it('builds the monochrome icon from a white hood and explicit black face cutout', () => {
     const monochrome =
       textOutputs[`${ANDROID_RES}/drawable/ic_launcher_monochrome.xml`];
-    expect(monochrome).toContain('android:fillType="evenOdd"');
-    expect(monochrome).toContain('<clip-path');
+    expect(monochrome).toContain('android:name="face-cutout"');
+    expect(monochrome).toContain('android:fillColor="#000000"');
+    expect(monochrome).toContain('android:name="hood"');
+    expect(monochrome).toContain('android:fillColor="#FFFFFF"');
   });
 
   it('ships exactly three opaque 1024 iOS icons', () => {
@@ -858,26 +852,15 @@ describe('safe-circle scan', () => {
     expect(outsideIds(canvas(`<g id="pal">${body}</g>`))).toEqual([id]);
   });
 
-  it('ignores clip geometry and paths outside the pal group', () => {
+  it('ignores clip geometry and the intentional hood bleed', () => {
     const text = canvas(
       '<defs><clipPath id="c"><path d="M-28 -28H140V140Z"/></clipPath></defs>' +
-        '<path id="rim" d="M-28 -28H140" fill="none" stroke="#000000" stroke-width="1"/>' +
+        '<path id="hood" d="M-28 -28H140" fill="none" stroke="#000000" stroke-width="1"/>' +
         '<g clip-path="url(#c)"><g id="pal"><path id="inside" d="M50 50H60V60Z" fill="#000000"/></g></g>',
     );
     expect(outsideIds(text)).toEqual([]);
   });
 });
-
-function drawnPathIds(nodes, inPal = false, out = {pal: [], rest: []}) {
-  for (const node of nodes) {
-    if (node.type === 'path') {
-      (inPal ? out.pal : out.rest).push(node.attrs.id);
-    } else {
-      drawnPathIds(node.children, inPal || node.id === 'pal', out);
-    }
-  }
-  return out;
-}
 
 describe('committed source structure', () => {
   const readSource = key =>
@@ -885,53 +868,63 @@ describe('committed source structure', () => {
       path.join(__dirname, '..', '..', SOURCE_DIR, SOURCE_FILES[key]),
       'utf-8',
     );
-  const FOREGROUND_PAL = [
-    'body',
-    'band',
-    'mouth',
-    'eye-left',
-    'eye-right',
-    'highlight-1',
-    'highlight-2',
-  ];
+  const ids = key =>
+    parseSvg(readSource(key)).children.map(node => node.attrs.id);
+  const geometry = key =>
+    parseSvg(readSource(key)).children.map(({attrs}) => [attrs.id, attrs.d]);
 
   it.each([
-    ['foregroundLight', FOREGROUND_PAL, ['rim', 'pocket', 'road']],
-    ['foregroundDark', FOREGROUND_PAL, ['rim', 'pocket', 'road']],
-    ['monochrome', ['silhouette'], ['pocket-edge']],
-  ])(
-    'puts the whole pal of %s in the pal group and only bleed shapes outside',
-    (key, pal, rest) => {
-      expect(drawnPathIds(parseSvg(readSource(key)).children)).toEqual({
-        pal,
-        rest,
-      });
-    },
-  );
-
-  it('clips the monochrome pal on a wrapper group, never inside it', () => {
-    const {children} = parseSvg(readSource('monochrome'));
-    const wrapper = children.find(node => node.clipId);
-    expect(wrapper.clipId).toBe('pal-clip');
-    expect(wrapper.children.map(node => node.id)).toEqual(['pal']);
-    expect(wrapper.children[0].clipD).toBeUndefined();
+    [
+      'foregroundLight',
+      [
+        'hood',
+        'hood-shadow',
+        'mask',
+        'mask-shadow',
+        'eye-left',
+        'eye-right',
+        'eye-glow-left',
+        'eye-glow-right',
+        'nose',
+        'vents',
+      ],
+    ],
+    [
+      'foregroundDark',
+      [
+        'hood',
+        'hood-shadow',
+        'mask',
+        'mask-shadow',
+        'eye-left',
+        'eye-right',
+        'eye-glow-left',
+        'eye-glow-right',
+        'nose',
+        'vents',
+      ],
+    ],
+    ['monochrome', ['hood', 'face-cutout', 'eye-left', 'eye-right', 'vents']],
+  ])('includes the named Doctor Doom face shapes in %s', (key, expected) => {
+    expect(ids(key)).toEqual(expected);
   });
 
-  it('draws the monochrome layer in opaque white only', () => {
+  it('uses an explicit black face cutout and white monochrome features', () => {
     const text = readSource('monochrome');
+    expect(text).toContain('id="face-cutout"');
+    expect(text).toContain('id="face-cutout" d="M29 45');
+    expect(text).toContain('id="eye-left"');
     expect(text).not.toContain('fill-opacity');
     const paints = [...text.matchAll(/(?:fill|stroke)="([^"]+)"/g)].map(
       ([, value]) => value,
     );
-    expect(new Set(paints)).toEqual(new Set(['#FFFFFF', 'none']));
-    expect(text).toContain('fill-rule="evenodd"');
+    expect(new Set(paints)).toEqual(new Set(['#FFFFFF', '#000000']));
   });
 
-  it('gives the dark foreground the light geometry with only the pal recoloured', () => {
-    const light = readSource('foregroundLight');
-    const dark = readSource('foregroundDark');
-    expect(light).toContain('id="body" d="');
-    expect(dark.replace('fill="#A86C34"', 'fill="#F5DBBC"')).toBe(light);
+  it('keeps the same geometry between light and dark foregrounds', () => {
+    expect(geometry('foregroundDark')).toEqual(geometry('foregroundLight'));
+    expect(readSource('foregroundLight')).toContain('fill="#0C6B3F"');
+    expect(readSource('foregroundDark')).toContain('fill="#087744"');
   });
 });
 
@@ -1160,11 +1153,11 @@ describe('committed PNG content', () => {
   const POCKET = [88, 92];
 
   it.each([
-    ['AppIcon.png', '#FFFFFF', '#F5DBBC', '#000000'],
-    ['AppIcon-dark.png', '#181715', '#A86C34', '#000000'],
-    ['AppIcon-tinted.png', '#000000', '#FFFFFF', '#000000'],
+    ['AppIcon.png', '#071A12', '#06452D', '#B8C2BE'],
+    ['AppIcon-dark.png', '#03120B', '#04351F', '#D2DAD7'],
+    ['AppIcon-tinted.png', '#000000', '#FFFFFF', '#FFFFFF'],
   ])(
-    '%s paints backdrop %s, pal %s and eye %s with no transparency chunk',
+    '%s paints backdrop %s, hood %s and face %s with no transparency chunk',
     (name, backdrop, pal, eye) => {
       const icon = png(`${APPICONSET}/${name}`);
       expect(icon.chunks).toEqual(['IHDR', 'IDAT', 'IEND']);
@@ -1189,7 +1182,8 @@ describe('committed PNG content', () => {
           expect(icon.at(...point)).toEqual(ios.at(...point));
         }
       }
-      expect(square.at(14, 14)).toEqual({color: '#FFFFFF', alpha: 255});
+      // Doom AI's opaque deep-green backdrop replaces the former white source icon.
+      expect(square.at(14, 14)).toEqual({color: '#071A12', alpha: 255});
       expect(round.at(14, 14).alpha).toBe(0);
     },
   );

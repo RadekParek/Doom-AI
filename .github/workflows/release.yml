@@ -221,6 +221,13 @@ jobs:
           scripts/verify-plus-gate.sh android/app/build/outputs/apk/prod/release/app-prod-release.apk --gated
           scripts/verify-plus-gate.sh android/app/build/outputs/bundle/prodRelease/app-prod-release.aab --gated
 
+      # Preserve Gradle's output path for validation, but attach the APK to the
+      # GitHub Release using Doom AI's user-facing filename.
+      - name: Prepare Doom AI APK
+        run: |
+          cp android/app/build/outputs/apk/prod/release/app-prod-release.apk \
+            "android/app/build/outputs/apk/prod/release/Doom AI.apk"
+
       - name: Upload payload report
         if: always()
         uses: actions/upload-artifact@v4
@@ -249,7 +256,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: android/app/build/outputs/apk/prod/release/app-prod-release.apk
+          files: android/app/build/outputs/apk/prod/release/Doom AI.apk
           tag_name: "v${{ env.VERSION }}"
           name: "Release v${{ env.VERSION }}"
           draft: false

@@ -20,6 +20,7 @@ import {FONT_FAMILIES, NON_LATIN_LOCALES} from '../../theme/tokens';
 describe('useTheme', () => {
   beforeEach(() => {
     uiStore.setColorScheme('light');
+    uiStore.setAccentTheme('classic');
     uiStore.setLanguage('en');
   });
 
@@ -31,6 +32,17 @@ describe('useTheme', () => {
         ...lightTheme,
       }),
     );
+  });
+
+  it('applies the selected Doom palette and responds to changing it', () => {
+    uiStore.setAccentTheme('doom');
+    const {result, rerender} = renderHook(() => useTheme());
+
+    expect(result.current.colors.primary).toBe('#176B3B');
+
+    uiStore.setAccentTheme('classic');
+    rerender({});
+    expect(result.current.colors.primary).toBe(lightTheme.colors.primary);
   });
 
   it('should return dark theme when colorScheme is dark', async () => {

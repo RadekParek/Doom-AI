@@ -25,7 +25,11 @@ import {
   HelperText,
 } from 'react-native-paper';
 
-import {ProjectionModelSelector, MemoryRequirement} from '../../../components';
+import {
+  ProjectionModelSelector,
+  MemoryRequirement,
+  ProviderLogo,
+} from '../../../components';
 
 import {useTheme, useMemoryCheck, useStorageCheck} from '../../../hooks';
 
@@ -699,6 +703,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
                   })}>
                   {getModelTypeIcon()}
                 </View>
+                <ProviderLogo name={model.name} />
                 <Text
                   variant="titleSmall"
                   style={styles.compactModelName}

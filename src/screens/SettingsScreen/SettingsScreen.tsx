@@ -1091,6 +1091,41 @@ export const SettingsScreen: React.FC = observer(() => {
                 </View>
                 <Divider />
 
+                <View style={styles.settingItemContainer}>
+                  <Text variant="titleMedium" style={styles.textLabel}>
+                    {l10n.settings.accentColor}
+                  </Text>
+                  <Text variant="labelSmall" style={styles.textDescription}>
+                    {l10n.settings.accentColorDescription}
+                  </Text>
+                  <SegmentedButtons
+                    value={uiStore.accentTheme}
+                    onValueChange={value =>
+                      uiStore.setAccentTheme(
+                        value as 'doom' | 'classic' | 'violet',
+                      )
+                    }
+                    buttons={[
+                      {
+                        value: 'doom',
+                        label: l10n.settings.accentDoom,
+                        testID: 'accent-theme-doom',
+                      },
+                      {
+                        value: 'classic',
+                        label: l10n.settings.accentClassic,
+                        testID: 'accent-theme-classic',
+                      },
+                      {
+                        value: 'violet',
+                        label: l10n.settings.accentViolet,
+                        testID: 'accent-theme-violet',
+                      },
+                    ]}
+                  />
+                </View>
+                <Divider />
+
                 {/* Text-to-speech availability toggle */}
                 <View style={styles.switchContainer}>
                   <View style={styles.textContainer}>
