@@ -808,7 +808,8 @@
         "medium": "Średni",
         "high": "Wysoki",
         "xhigh": "Bardzo wysoki",
-        "max": "Maksymalny"
+        "max": "Maksymalny",
+        "ultracode": "Ultracode"
       }
     },
     "modelsHeaderRight": {

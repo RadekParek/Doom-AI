@@ -461,7 +461,8 @@
         "medium": "中",
         "high": "高",
         "xhigh": "超高",
-        "max": "最高"
+        "max": "最高",
+        "ultracode": "Ultracode"
       },
       "isReasoningModelHelp": "顯示此模型的思考控制，即使未自動偵測到。",
       "supportsEffort": "支援分級強度",

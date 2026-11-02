@@ -18,6 +18,16 @@ import {styles} from './styles';
 import {View} from 'react-native';
 import {L10nContext} from '../../utils';
 
+const EFFORT_COLORS: Record<(typeof EFFORT_LEVELS)[number], string> = {
+  minimal: '#D9F2DF',
+  low: '#A8E6B0',
+  medium: '#FDE68A',
+  high: '#FDBA74',
+  xhigh: '#F87171',
+  max: '#EC4899',
+  ultracode: '#8B5CF6',
+};
+
 interface ModelSettingsSheetProps {
   isVisible: boolean;
   onClose: () => void;
@@ -242,6 +252,20 @@ export const ModelSettingsSheet: React.FC<ModelSettingsSheetProps> = memo(
                         testID={`effort-chip-${level}`}
                         selected={effortSet.includes(level)}
                         showSelectedCheck
+                        selectedColor={EFFORT_COLORS[level]}
+                        style={{
+                          borderColor: EFFORT_COLORS[level],
+                          backgroundColor: effortSet.includes(level)
+                            ? EFFORT_COLORS[level]
+                            : 'transparent',
+                        }}
+                        textStyle={{
+                          color: effortSet.includes(level)
+                            ? level === 'ultracode'
+                              ? '#FFFFFF'
+                              : '#172019'
+                            : EFFORT_COLORS[level],
+                        }}
                         onPress={() => onEffortLevelToggle(level)}>
                         {l10n.components.modelSettingsSheet.effortLevels[level]}
                       </Chip>

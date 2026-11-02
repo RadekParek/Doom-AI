@@ -159,7 +159,7 @@ describe('orderEffortValues', () => {
     expect(orderEffortValues([])).toEqual([]);
   });
 
-  it('exposes the six canonical levels in intensity order', () => {
+  it('exposes canonical levels in intensity order', () => {
     expect(EFFORT_LEVELS).toEqual([
       'minimal',
       'low',
@@ -167,6 +167,7 @@ describe('orderEffortValues', () => {
       'high',
       'xhigh',
       'max',
+      'ultracode',
     ]);
   });
 });

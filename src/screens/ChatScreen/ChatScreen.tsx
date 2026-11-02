@@ -324,6 +324,8 @@ export const ChatScreen: React.FC = observer(() => {
             effortValues: reasoningCapability.effortValues,
             reasoningEffort,
             onEffortCycle: handleEffortCycle,
+            agentModeEnabled: uiStore.agentModeEnabled,
+            onAgentModeToggle: enabled => uiStore.setAgentModeEnabled(enabled),
           }}
           textInputProps={{
             placeholder: !modelStore.engine

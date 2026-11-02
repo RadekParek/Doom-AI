@@ -9,10 +9,12 @@ import {
   Alert,
   ScrollView,
   Image,
+  StyleSheet,
 } from 'react-native';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useCameraPermission} from 'react-native-vision-camera';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import LinearGradient from 'react-native-linear-gradient';
 
 import {observer} from 'mobx-react';
 import {IconButton, Text} from 'react-native-paper';
@@ -88,6 +90,9 @@ export interface ChatInputTopLevelProps {
   isThinkingEnabled?: boolean;
   /** Callback when thinking toggle is pressed */
   onThinkingToggle?: (enabled: boolean) => void;
+  /** Enables the bounded built-in agent toolset from the composer. */
+  agentModeEnabled?: boolean;
+  onAgentModeToggle?: (enabled: boolean) => void;
   /** Append a voice transcript to the composer (never auto-sent). */
   appendTranscript?: (text: string) => void;
   /**
@@ -120,6 +125,9 @@ export interface ChatInputAdditionalProps {
   isThinkingEnabled?: boolean;
   /** Callback when thinking toggle is pressed */
   onThinkingToggle?: (enabled: boolean) => void;
+  /** Enables the bounded built-in agent toolset from the composer. */
+  agentModeEnabled?: boolean;
+  onAgentModeToggle?: (enabled: boolean) => void;
   /** Whether the model supports graded reasoning effort (axis 2) */
   supportsEffort?: boolean;
   /** The graded effort value set, e.g. ['low','medium','high'] */
@@ -162,6 +170,8 @@ export const ChatInput = observer(
     showThinkingToggle = false,
     isThinkingEnabled = false,
     onThinkingToggle,
+    agentModeEnabled = false,
+    onAgentModeToggle,
     appendTranscript,
     onVoicePress,
     supportsEffort = false,
@@ -429,6 +439,24 @@ export const ChatInput = observer(
       reasoningEffort && reasoningEffort in effortLevelLabels
         ? effortLevelLabels[reasoningEffort as keyof typeof effortLevelLabels]
         : reasoningEffort;
+    const effortAccents: Record<string, string> = {
+      minimal: '#D9F2DF',
+      low: '#A8E6B0',
+      medium: '#FDE68A',
+      high: '#FDBA74',
+      xhigh: '#F87171',
+      max: '#EC4899',
+      ultracode: '#8B5CF6',
+    };
+    const effortAccent = reasoningEffort
+      ? effortAccents[reasoningEffort]
+      : undefined;
+    const thinkingForeground =
+      reasoningEffort === 'ultracode'
+        ? '#FFFFFF'
+        : effortAccent
+          ? '#162019'
+          : inputBackgroundColor;
 
     return (
       <View style={styles.container}>
@@ -642,8 +670,20 @@ export const ChatInput = observer(
                     testID="thinking-toggle"
                     style={[
                       styles.thinkingToggleLeft,
-                      isThinkingEnabled && {backgroundColor: onSurfaceColor},
-                      {borderColor: onSurfaceColorVariant},
+                      isThinkingEnabled && {
+                        backgroundColor:
+                          reasoningEffort === 'ultracode'
+                            ? 'transparent'
+                            : (effortAccent ?? onSurfaceColor),
+                        borderColor:
+                          reasoningEffort === 'ultracode'
+                            ? '#3B82F6'
+                            : (effortAccent ?? onSurfaceColor),
+                        overflow: 'hidden',
+                      },
+                      !isThinkingEnabled && {
+                        borderColor: onSurfaceColorVariant,
+                      },
                     ]}
                     onPress={() =>
                       supportsEffort && effortValues.length > 0
@@ -666,12 +706,21 @@ export const ChatInput = observer(
                               .enableThinking
                     }
                     accessibilityRole="button">
+                    {isThinkingEnabled && reasoningEffort === 'ultracode' && (
+                      <LinearGradient
+                        colors={['#7C3AED', '#2563EB']}
+                        start={{x: 0, y: 0.5}}
+                        end={{x: 1, y: 0.5}}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
+                      />
+                    )}
                     <AtomIcon
                       width={14}
                       height={14}
                       stroke={
                         isThinkingEnabled
-                          ? inputBackgroundColor
+                          ? thinkingForeground
                           : onSurfaceColorVariant
                       }
                       strokeWidth={2}
@@ -682,7 +731,7 @@ export const ChatInput = observer(
                       style={[
                         styles.thinkingToggleText,
                         isThinkingEnabled
-                          ? {color: inputBackgroundColor}
+                          ? {color: thinkingForeground}
                           : {color: onSurfaceColorVariant},
                       ]}>
                       {supportsEffort && isThinkingEnabled && reasoningEffort
@@ -692,6 +741,58 @@ export const ChatInput = observer(
                   </TouchableOpacity>
                 )}
               </View>
+
+              {onAgentModeToggle && !isCameraActive && (
+                <TouchableOpacity
+                  testID="agent-mode-toggle"
+                  onPress={() => onAgentModeToggle(!agentModeEnabled)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    agentModeEnabled
+                      ? 'Disable agent tools'
+                      : 'Enable agent tools'
+                  }
+                  accessibilityHint="Enables built-in web search, link reading, calculation, and HTML tools. It does not grant access to files, shell commands, or arbitrary device permissions."
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    overflow: 'hidden',
+                    borderColor: agentModeEnabled
+                      ? '#22C55E'
+                      : onSurfaceColorVariant,
+                    backgroundColor: agentModeEnabled
+                      ? '#DDF7E5'
+                      : 'transparent',
+                    paddingHorizontal: 9,
+                    paddingVertical: 5,
+                    marginLeft: 4,
+                  }}>
+                  {agentModeEnabled && (
+                    <LinearGradient
+                      colors={['#34D399', '#A7F3D0']}
+                      start={{x: 0, y: 0.5}}
+                      end={{x: 1, y: 0.5}}
+                      pointerEvents="none"
+                      style={StyleSheet.absoluteFill}
+                    />
+                  )}
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      position: 'relative',
+                      zIndex: 1,
+                      fontSize: 12,
+                      fontWeight: '600',
+                      color: agentModeEnabled
+                        ? '#14532D'
+                        : onSurfaceColorVariant,
+                    }}>
+                    Agent
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {/* Right Controls */}
               <View style={styles.rightControls}>

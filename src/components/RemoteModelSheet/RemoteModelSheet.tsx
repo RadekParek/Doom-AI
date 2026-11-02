@@ -48,10 +48,11 @@ interface RemoteModelSheetProps {
   isVisible: boolean;
   onDismiss: () => void;
   onModelAdded?: () => void;
+  initialProvider?: {name: string; url: string; serverType: ServerType};
 }
 
 export const RemoteModelSheet: React.FC<RemoteModelSheetProps> = observer(
-  ({isVisible, onDismiss, onModelAdded}) => {
+  ({isVisible, onDismiss, onModelAdded, initialProvider}) => {
     const theme = useTheme();
     const l10n = useContext(L10nContext);
     const styles = createStyles(theme);
@@ -105,12 +106,12 @@ export const RemoteModelSheet: React.FC<RemoteModelSheetProps> = observer(
     // Reset all state when sheet reopens
     useEffect(() => {
       if (isVisible) {
-        setUrl('');
-        setServerName('');
+        setUrl(initialProvider?.url ?? '');
+        setServerName(initialProvider?.name ?? '');
         setApiKey('');
         setTimeoutSeconds('');
         timeoutSecondsRef.current = '';
-        setServerType('unknown');
+        setServerType(initialProvider?.serverType ?? 'unknown');
         setSecureTextEntry(true);
         setIsProbing(false);
         setProbeResult(null);
@@ -121,7 +122,12 @@ export const RemoteModelSheet: React.FC<RemoteModelSheetProps> = observer(
         setUrlError('');
         setIsScannerOpen(false);
       }
-    }, [isVisible]);
+    }, [
+      isVisible,
+      initialProvider?.name,
+      initialProvider?.serverType,
+      initialProvider?.url,
+    ]);
 
     const probeServer = useCallback(
       async (probeUrl: string) => {

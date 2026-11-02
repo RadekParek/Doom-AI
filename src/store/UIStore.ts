@@ -48,6 +48,9 @@ export class UIStore {
 
   displayMemUsage = false;
 
+  /** Explicit opt-in to the app-provided bounded agent toolset. */
+  agentModeEnabled = false;
+
   iOSBackgroundDownloading = true;
 
   benchmarkShareDialog = {
@@ -117,6 +120,7 @@ export class UIStore {
         'colorScheme',
         'autoNavigatetoChat',
         'displayMemUsage',
+        'agentModeEnabled',
         'benchmarkShareDialog',
         '_language',
         'toolCompatWarnedModels',
@@ -147,6 +151,12 @@ export class UIStore {
   setColorScheme(colorScheme: 'light' | 'dark') {
     runInAction(() => {
       this.colorScheme = colorScheme;
+    });
+  }
+
+  setAgentModeEnabled(enabled: boolean) {
+    runInAction(() => {
+      this.agentModeEnabled = enabled;
     });
   }
 

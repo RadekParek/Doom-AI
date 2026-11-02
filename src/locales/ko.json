@@ -383,7 +383,8 @@
         "medium": "보통",
         "high": "높음",
         "xhigh": "매우 높음",
-        "max": "최대"
+        "max": "최대",
+        "ultracode": "Ultracode"
       }
     },
     "assistantPalSheet": {

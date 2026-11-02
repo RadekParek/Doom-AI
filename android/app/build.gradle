@@ -268,3 +268,10 @@ project.ext.vectoricons = [
 
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 
+
+// User-facing APK artifact name. Variant directories remain separate (debug/release).
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        output.outputFileName = "Doom AI.apk"
+    }
+}

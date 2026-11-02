@@ -839,7 +839,8 @@
         "medium": "متوسط",
         "high": "زیاد",
         "xhigh": "خیلی زیاد",
-        "max": "حداکثر"
+        "max": "حداکثر",
+        "ultracode": "Ultracode"
       }
     },
     "modelsHeaderRight": {
