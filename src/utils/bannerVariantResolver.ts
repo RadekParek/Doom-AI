@@ -12,7 +12,7 @@ export const MIN_REMOTE_TOKENS = 500;
 // clamps to min(CONTEXT_LADDER[last], model.ggufMetadata.context_length).
 export const CONTEXT_LADDER = [
   2048, 4096, 6144, 8192, 12288, 16384, 24576, 32768, 49152, 65536, 98304,
-  131072,
+  131072, 196608, 262144,
 ] as const;
 
 export interface BannerResolverInput {

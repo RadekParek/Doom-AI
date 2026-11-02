@@ -577,6 +577,19 @@ export const SidebarContent: React.FC<DrawerContentComponentProps> = observer(
               testID="drawer-item-benchmark"
             />
             <Drawer.Item
+              label="API Providers"
+              icon={() => (
+                <SettingsIcon
+                  width={24}
+                  height={24}
+                  stroke={theme.colors.primary}
+                />
+              )}
+              onPress={() => navigateTo(ROUTES.API_PROVIDERS)}
+              style={styles.menuDrawerItem}
+              testID="drawer-item-api-providers"
+            />
+            <Drawer.Item
               label={l10n.components.sidebarContent.menuItems.settings}
               icon={() => (
                 <SettingsIcon

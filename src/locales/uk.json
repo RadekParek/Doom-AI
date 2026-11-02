@@ -849,7 +849,8 @@
         "medium": "Середній",
         "high": "Високий",
         "xhigh": "Дуже високий",
-        "max": "Максимальний"
+        "max": "Максимальний",
+        "ultracode": "Ultracode"
       }
     },
     "modelsHeaderRight": {

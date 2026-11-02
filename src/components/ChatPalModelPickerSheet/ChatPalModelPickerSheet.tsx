@@ -18,6 +18,7 @@ import {t} from '../../locales';
 import type {Pal} from '../../types/pal';
 import {CloseIcon, SettingsIcon} from '../../assets/icons';
 import {SkillsDisplay} from '../SkillsDisplay';
+import {ProviderLogo} from '../ProviderLogo';
 
 type Tab = 'models' | 'pals';
 
@@ -235,6 +236,7 @@ export const ChatPalModelPickerSheet = observer(
             key={model.id}
             style={[styles.listItem, isActiveModel && styles.activeListItem]}
             onPress={() => handleModelSelect(model)}>
+            <ProviderLogo name={model.name} />
             <View style={styles.itemContent}>
               <Text
                 style={[

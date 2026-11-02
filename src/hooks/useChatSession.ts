@@ -55,6 +55,7 @@ import {
 } from '../utils/completionTypes';
 import {
   collectSystemPromptFragments,
+  deriveToolSchemas,
   seedReadUrlAllowlist,
   talentRegistry,
 } from '../services/talents';
@@ -156,9 +157,18 @@ const prepareCompletion = async ({
 
   // Talent-contributed system-prompt fragments (e.g. search grounding). Kept on
   // the initial messages array so they persist across every follow-up tool turn.
-  const sessionToolNames = (
-    (sessionCompletionSettings?.tools as ToolDefinition[] | undefined) ?? []
-  ).map(tool => tool.function?.name ?? '');
+  const configuredTools =
+    (sessionCompletionSettings?.tools as ToolDefinition[] | undefined) ?? [];
+  const agentTools = uiStore.agentModeEnabled ? deriveToolSchemas() : [];
+  const toolsByName = new Map<string, ToolDefinition>();
+  [...configuredTools, ...agentTools].forEach(tool => {
+    const name = tool.function?.name;
+    if (name) {
+      toolsByName.set(name, tool);
+    }
+  });
+  const activeTools = [...toolsByName.values()];
+  const sessionToolNames = activeTools.map(tool => tool.function?.name ?? '');
   const systemPromptFragments = collectSystemPromptFragments(sessionToolNames, {
     now: new Date(),
     maxToolTurns: DEFAULT_MAX_TURNS,
@@ -175,6 +185,7 @@ const prepareCompletion = async ({
 
   const completionParamsWithAppProps = {
     ...sessionCompletionSettings,
+    ...(uiStore.agentModeEnabled ? {tools: activeTools} : {}),
     // A spoken reply must start talking at once, not after a reasoning pass.
     ...(spoken ? {enable_thinking: false, reasoning: {enabled: false}} : {}),
     messages,
@@ -834,7 +845,19 @@ export const useChatSession = (
 
     // Allowed talent names for this Pal. The runner rejects any
     // tool call whose function.name isn't in this list.
-    const palTalents = (pal?.pact?.talents ?? []).map(t => t.name);
+    const palTalents = Array.from(
+      new Set([
+        ...(pal?.pact?.talents ?? []).map(t => t.name),
+        ...(uiStore.agentModeEnabled
+          ? (
+              (cleanCompletionParams.tools as ToolDefinition[] | undefined) ??
+              []
+            )
+              .map(tool => tool.function?.name)
+              .filter((name): name is string => !!name)
+          : []),
+      ]),
+    );
 
     const completionStartTime = Date.now();
     const timeToFirstTokenMs: {value: number | null} = {value: null};

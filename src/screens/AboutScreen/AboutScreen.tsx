@@ -141,7 +141,7 @@ export const AboutScreen: React.FC = () => {
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text variant="titleLarge" style={styles.title}>
-                PocketPal AI
+                Doom AI
               </Text>
               <Text variant="bodyMedium" style={styles.description}>
                 {l10n.about.description}

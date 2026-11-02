@@ -1,6 +1,7 @@
 import {CompletionResultSnapshot} from '../completionTypes';
 import {
   AUTOCLEAR_RUNWAY,
+  CONTEXT_LADDER,
   BannerResolverInput,
   resolveBannerVariant,
 } from '../bannerVariantResolver';
@@ -23,6 +24,13 @@ const snap = (
   contextFull: false,
   isRemote: false,
   ...overrides,
+});
+
+describe('context size choices', () => {
+  it('offers extended context tiers through 256k tokens', () => {
+    expect(CONTEXT_LADDER).toContain(131072);
+    expect(CONTEXT_LADDER[CONTEXT_LADDER.length - 1]).toBe(262144);
+  });
 });
 
 describe('resolveBannerVariant', () => {

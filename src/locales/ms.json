@@ -839,7 +839,8 @@
         "medium": "Sederhana",
         "high": "Tinggi",
         "xhigh": "Sangat tinggi",
-        "max": "Maksimum"
+        "max": "Maksimum",
+        "ultracode": "Ultracode"
       }
     },
     "modelsHeaderRight": {

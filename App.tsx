@@ -54,6 +54,7 @@ import {
   ChatScreen,
   ModelsScreen,
   SettingsScreen,
+  APIProvidersScreen,
   BenchmarkScreen,
   AboutScreen,
 
@@ -198,6 +199,16 @@ const App = observer(() => {
                               options={{
                                 headerStyle: styles.headerWithoutDivider,
                                 title: currentL10n.screenTitles.settings,
+                              }}
+                            />
+                            <Drawer.Screen
+                              name={ROUTES.API_PROVIDERS}
+                              component={gestureHandlerRootHOC(
+                                APIProvidersScreen,
+                              )}
+                              options={{
+                                headerStyle: styles.headerWithoutDivider,
+                                title: 'API Providers',
                               }}
                             />
                             <Drawer.Screen

@@ -33,6 +33,7 @@ export const EFFORT_LEVELS = [
   'high',
   'xhigh',
   'max',
+  'ultracode',
 ] as const;
 
 export type EffortLevel = (typeof EFFORT_LEVELS)[number];

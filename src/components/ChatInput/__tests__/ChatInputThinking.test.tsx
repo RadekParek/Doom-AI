@@ -338,6 +338,22 @@ describe('ChatInput Thinking Toggle', () => {
     expect(mockOnThinkingToggle).not.toHaveBeenCalled();
   });
 
+  it('exposes the agent toggle and reports changes from the composer', () => {
+    const onAgentModeToggle = jest.fn();
+    const {getByLabelText} = render(
+      <UserContext.Provider value={mockUser}>
+        <ChatInput
+          {...defaultProps}
+          agentModeEnabled={false}
+          onAgentModeToggle={onAgentModeToggle}
+        />
+      </UserContext.Provider>,
+    );
+
+    fireEvent.press(getByLabelText('Enable agent tools'));
+    expect(onAgentModeToggle).toHaveBeenCalledWith(true);
+  });
+
   it('should handle missing onThinkingToggle callback gracefully', () => {
     const {getByLabelText} = render(
       <UserContext.Provider value={mockUser}>
