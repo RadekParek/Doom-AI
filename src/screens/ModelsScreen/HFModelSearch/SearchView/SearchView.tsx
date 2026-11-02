@@ -9,6 +9,7 @@ import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import {
   Divider,
   EnhancedSearchBar,
+  ProviderLogo,
   ModelTypeTag,
   Sheet,
 } from '../../../../components';
@@ -86,6 +87,7 @@ export const SearchView = observer(
             {item.author}
           </Text>
           <View style={styles.modelNameContainer}>
+            <ProviderLogo name={item.id} />
             <Text style={styles.modelName}>{extractHFModelTitle(item.id)}</Text>
           </View>
           <View style={styles.statsContainer}>

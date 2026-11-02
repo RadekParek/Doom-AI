@@ -9,6 +9,7 @@ import {
   type AvailableLanguage,
 } from '../locales';
 import {ErrorState} from '../utils/errors';
+import type {AccentTheme} from '../theme/accentPalettes';
 import {
   INITIAL_ONBOARDING_STATE,
   type OnboardingState,
@@ -37,6 +38,8 @@ export class UIStore {
   //colorScheme = useColorScheme();
   colorScheme: 'light' | 'dark' =
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+
+  accentTheme: AccentTheme = 'doom';
 
   // Current selected language (default to English)
   _language: AvailableLanguage = 'en';
@@ -118,6 +121,7 @@ export class UIStore {
       properties: [
         'pageStates',
         'colorScheme',
+        'accentTheme',
         'autoNavigatetoChat',
         'displayMemUsage',
         'agentModeEnabled',
@@ -151,6 +155,12 @@ export class UIStore {
   setColorScheme(colorScheme: 'light' | 'dark') {
     runInAction(() => {
       this.colorScheme = colorScheme;
+    });
+  }
+
+  setAccentTheme(accentTheme: AccentTheme) {
+    runInAction(() => {
+      this.accentTheme = accentTheme;
     });
   }
 

@@ -246,7 +246,12 @@
       "signInAgain": "Please sign in again",
       "creatorSupport": "Creator accounts are deleted by our support team: {{contact}}",
       "failed": "Could not delete, try again"
-    }
+    },
+    "accentColor": "Accent color",
+    "accentColorDescription": "Choose the interface highlight palette.",
+    "accentDoom": "Doom green",
+    "accentClassic": "Classic",
+    "accentViolet": "Violet"
   },
   "memory": {
     "shortWarning": "Memory Warning",

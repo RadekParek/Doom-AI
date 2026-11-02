@@ -4,6 +4,7 @@ import {uiStore} from '../store';
 
 import {Theme} from '../utils/types';
 import {buildTheme} from '../utils/theme';
+import {resolveAccentColors} from '../theme/accentPalettes';
 
 /**
  * Consumes the active design-system Theme.
@@ -31,7 +32,8 @@ export const useTheme = (): Theme => {
   const paperTheme = usePaperTheme<MD3Theme>();
   const mode = uiStore.colorScheme;
   const language = uiStore.language;
-  const key = `${mode}:${language}`;
+  const accentTheme = uiStore.accentTheme;
+  const key = `${mode}:${language}:${accentTheme}`;
 
   let byKey = themeCache.get(paperTheme);
   if (byKey === undefined) {
@@ -41,9 +43,14 @@ export const useTheme = (): Theme => {
 
   let cached = byKey.get(key);
   if (cached === undefined) {
+    const builtTheme = buildTheme({mode, language});
     cached = {
       ...paperTheme,
-      ...buildTheme({mode, language}),
+      ...builtTheme,
+      colors: {
+        ...builtTheme.colors,
+        ...resolveAccentColors(accentTheme, mode),
+      },
     } as Theme;
     byKey.set(key, cached);
   }

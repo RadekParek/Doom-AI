@@ -10,8 +10,11 @@ export class UIStore {
 }
 
 const colorScheme = observable.box<'light' | 'dark'>('light');
+const accentTheme = observable.box<'doom' | 'classic' | 'violet'>('doom');
 const setColorScheme = (value: 'light' | 'dark') =>
   runInAction(() => colorScheme.set(value));
+const setAccentTheme = (value: 'doom' | 'classic' | 'violet') =>
+  runInAction(() => accentTheme.set(value));
 
 export const mockUiStore = {
   get colorScheme() {
@@ -19,6 +22,12 @@ export const mockUiStore = {
   },
   set colorScheme(value: 'light' | 'dark') {
     setColorScheme(value);
+  },
+  get accentTheme() {
+    return accentTheme.get();
+  },
+  set accentTheme(value: 'doom' | 'classic' | 'violet') {
+    setAccentTheme(value);
   },
   autoNavigatetoChat: false,
   benchmarkShareDialog: {
@@ -39,6 +48,7 @@ export const mockUiStore = {
   displayMemUsage: false,
   setAutoNavigateToChat: jest.fn(),
   setColorScheme: jest.fn(setColorScheme),
+  setAccentTheme: jest.fn(setAccentTheme),
   setDisplayMemUsage: jest.fn(),
   setBenchmarkShareDialogPreference: jest.fn(),
   showError: jest.fn(),

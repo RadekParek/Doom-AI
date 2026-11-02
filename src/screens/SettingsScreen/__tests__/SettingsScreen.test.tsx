@@ -42,6 +42,19 @@ describe('SettingsScreen', () => {
     jest.clearAllTimers();
   });
 
+  it('persists the selected Doom AI accent palette', async () => {
+    const originalAccent = uiStore.accentTheme;
+    const {getByTestId} = render(<SettingsScreen />, {
+      withSafeArea: true,
+      withNavigation: true,
+    });
+
+    fireEvent.press(getByTestId('accent-theme-violet'));
+    expect(uiStore.accentTheme).toBe('violet');
+
+    uiStore.setAccentTheme(originalAccent);
+  });
+
   afterEach(() => {
     // Clean up any remaining timers
     jest.runOnlyPendingTimers();
